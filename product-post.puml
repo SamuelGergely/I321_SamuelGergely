@@ -1,0 +1,27 @@
+@startuml
+actor Utilisateur
+participant "Global Router\n(app.js)" as App
+participant "Product Router\n(products.js)" as Router
+participant "Controller\n(productController.js)" as Controller
+participant "Middleware\n(errorHandler.js)" as Middleware
+database "MySQl DB" as DB
+
+==Product Creation Flow==
+
+Utilisateur -> App: POST api/v1/products
+App -> Router: Exécution route /products
+Router -> Controller: Appel createProduct(req)
+Controller -> DB: INSERT INTO products(name, price, category)\nVALUES{...}
+DB --> Controller: Résultat (données ou erreur)
+
+alt Succès
+    Controller --> Utilisateur: Code 200 : Success
+else Erreur
+    Controller -> Middleware: next(error)
+    Middleware --> Utilisateur: Code 400 Bad Request
+end
+
+==Error Case==
+Controller --> Utilisateur: Code 500 Internal Server Error (unexpected)
+
+@enduml
